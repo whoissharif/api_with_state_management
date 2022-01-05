@@ -1,22 +1,26 @@
 import 'package:api_with_state_manager/models/todo.dart';
-import 'package:http/http.dart' as http;
+import 'package:api_with_state_manager/services/remote_services.dart';
+import 'package:get/state_manager.dart';
 
-class TodoController {
-  var client = http.Client();
+class TodoController extends GetxController {
+  var isLoading = true.obs;
+  var listofTodo = <Todo>[].obs;
 
-  Future<List<Todo>> getAllTodo() async {
-    List<Todo>? todoList;
+  @override
+  void onInit() {
+    getAllTodo();
+    super.onInit();
+  }
 
+  void getAllTodo() async {
     try {
-      var response = await client
-        .get(Uri.parse('https://jsonplaceholder.typicode.com/todos'));
-      if(response.statusCode == 200){
-        todoList = todoFromJson(response.body);
+      isLoading(true);
+      var todos = await RemoteServices.getAllTodo();
+      if (todos != null) {
+        listofTodo.value = todos;
       }
-      
-    } catch (e) {
-      print(e);
+    } finally {
+      isLoading(false);
     }
-    return todoList!;
   }
 }
